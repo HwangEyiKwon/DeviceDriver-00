@@ -16,24 +16,27 @@ DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
 
 int DeviceDriver::read(long address)
 {
-    int prevReadValue = 0;
-    int curReadValue = 0;
+    int firstReadValue = (int)(m_hardware->read(address));
 
-    for (int currentReadCount = 0; currentReadCount < READ_COUNT; currentReadCount++) {
-        this_thread::sleep_for(chrono::milliseconds(200));
+    for (int currentReadCount = 1; currentReadCount < READ_COUNT; currentReadCount++) {
+        DelayMilliseconds(200);
         
         int curReadValue = (int)(m_hardware->read(address));
-        if (prevReadValue != curReadValue && currentReadCount != 0) {
+        if (firstReadValue != curReadValue) {
             throw ReadFailException();
         }
-        prevReadValue = curReadValue;
     }
 
-    return curReadValue;
+    return firstReadValue;
 }
 
 void DeviceDriver::write(long address, int data)
 {
     // TODO: implement this method
     m_hardware->write(address, (unsigned char)data);
+}
+
+void DeviceDriver::DelayMilliseconds(int number)
+{
+    this_thread::sleep_for(chrono::milliseconds(number));
 }

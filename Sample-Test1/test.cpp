@@ -50,4 +50,12 @@ TEST_F(DeviceDriverFixture, DeviceDriverReadExceptionTest) {
 	}
 
 	deleteObject();
+}TEST_F(DeviceDriverFixture, DeviceDriverNormalReadTest) {
+
+	makeObject();
+
+	EXPECT_CALL(*mockFlashMemoryDevice, read).WillRepeatedly(Return('A'));
+	EXPECT_THAT(deviceDriverWithMock->read(0xDEADDEAD), Eq(int('A')));
+
+	deleteObject();
 }
