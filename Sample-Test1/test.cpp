@@ -14,7 +14,7 @@ public:
 class DeviceDriverFixture : public testing::Test {
 public:
 	void makeObject() {
-		mockFlashMemoryDevice = new MockFlashMemoryDevice();
+		mockFlashMemoryDevice = new NiceMock<MockFlashMemoryDevice>();
 		deviceDriverWithMock = new DeviceDriver(mockFlashMemoryDevice);
 	}
 
@@ -23,7 +23,7 @@ public:
 		delete deviceDriverWithMock;
 	}
 
-	MockFlashMemoryDevice* mockFlashMemoryDevice;
+	NiceMock<MockFlashMemoryDevice>* mockFlashMemoryDevice;
 	DeviceDriver* deviceDriverWithMock;
 };
 
@@ -50,12 +50,42 @@ TEST_F(DeviceDriverFixture, DeviceDriverReadExceptionTest) {
 	}
 
 	deleteObject();
-}TEST_F(DeviceDriverFixture, DeviceDriverNormalReadTest) {
+}
+TEST_F(DeviceDriverFixture, DeviceDriverNormalReadTest) {
 
 	makeObject();
 
 	EXPECT_CALL(*mockFlashMemoryDevice, read).WillRepeatedly(Return('A'));
 	EXPECT_THAT(deviceDriverWithMock->read(0xDEADDEAD), Eq(int('A')));
+
+	deleteObject();
+}
+
+TEST_F(DeviceDriverFixture, DeviceDriverWriteExceptionTest) {
+
+	makeObject();
+
+	EXPECT_CALL(*mockFlashMemoryDevice, read).WillRepeatedly(Return('A'));
+	try {
+		deviceDriverWithMock->write(0xDEADDEAD, 0xDEAD);
+		FAIL();
+	}
+	catch (exception e) {
+		// PASS
+	}
+
+	deleteObject();
+}
+
+TEST_F(DeviceDriverFixture, DeviceDriverNormalWriteTest) {
+
+	makeObject();
+
+	EXPECT_CALL(*mockFlashMemoryDevice, read).WillOnce(Return((unsigned char)0xFF))
+											.WillRepeatedly(Return((unsigned char)0xA));
+	deviceDriverWithMock->write(0xDEADDEAD, 0xA);
+
+	EXPECT_THAT(deviceDriverWithMock->read(0x0), Eq(0xA));
 
 	deleteObject();
 }

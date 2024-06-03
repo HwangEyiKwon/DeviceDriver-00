@@ -10,6 +10,12 @@ public:
         return "Read Fail Exception Occured!!!!!\n";
     }
 };
+class WriteFailException : public exception {
+public:
+    char const* what() const override {
+        return "Write Fail Exception Occured!!!!!\n";
+    }
+};
 
 DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
 {}
@@ -32,7 +38,10 @@ int DeviceDriver::read(long address)
 
 void DeviceDriver::write(long address, int data)
 {
-    // TODO: implement this method
+    int readValue = (int)(m_hardware->read(address));
+    if (readValue != 0xFF) {
+        throw WriteFailException();
+    }
     m_hardware->write(address, (unsigned char)data);
 }
 
